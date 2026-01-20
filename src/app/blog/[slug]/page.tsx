@@ -6,13 +6,24 @@ export function generateStaticParams() {
   return getSlugs("blog").map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const { frontmatter } = getRawBySlug("blog", params.slug);
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const { frontmatter } = getRawBySlug("blog", slug);
   return { title: frontmatter.title, description: frontmatter.description };
 }
 
-export default async function BlogPost({ params }: { params: { slug: string } }) {
-  const { frontmatter, content } = getRawBySlug("blog", params.slug);
+export default async function BlogPost({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+
+  const { frontmatter, content } = getRawBySlug("blog", slug);
   const { content: mdx } = await renderMdx(content);
 
   return (
