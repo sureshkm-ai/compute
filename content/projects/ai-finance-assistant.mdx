@@ -1,0 +1,37 @@
+---
+title: "AI Finance Assistant"
+description: "A conversational AI agent for personal finance analysis — tracks spending, answers natural-language queries over your data, and surfaces actionable insights."
+date: "2026-03-01"
+draft: false
+featured: true
+status: "Live"
+stack: ["Python", "Streamlit", "LangChain", "OpenAI", "Pandas"]
+impact:
+  - "Natural-language queries over financial data"
+  - "Automated spending insights & summaries"
+  - "Deployed live on Streamlit Cloud"
+links:
+  - label: "GitHub"
+    url: "https://github.com/sureshkm-ai/ai-finance-assitant"
+  - label: "Live Demo"
+    url: "https://finance-agent-ai.streamlit.app/"
+---
+
+## Overview
+
+AI Finance Assistant is a conversational agent that lets you ask plain-English questions about your personal finances and get structured, grounded answers — no spreadsheets required.
+
+## What it does
+
+- **Natural-language queries** — ask "How much did I spend on food last month?" and get a direct answer
+- **Spending summaries** — automatic categorisation and period-over-period comparisons
+- **Insight surfacing** — the agent flags unusual transactions and highlights saving opportunities
+- **Streamlit UI** — clean, browser-based interface deployable in one click
+
+## How it works
+
+The agent combines an LLM with Pandas-backed tool calls to query your financial data. A LangChain tool layer translates user intent into structured data operations, so the model never hallucinates figures — it always derives answers from the actual numbers.
+
+## Try it
+
+The app is live at [finance-agent-ai.streamlit.app](https://finance-agent-ai.streamlit.app/) — upload a CSV export from your bank and start asking questions.
