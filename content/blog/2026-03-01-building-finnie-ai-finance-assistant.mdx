@@ -27,6 +27,8 @@ Before diving into how it's built, here's the surface area:
 
 Everything runs in a clean Streamlit chat interface, and the same backend is exposed as an MCP server for Claude Desktop — so you can get the same intelligence directly inside Claude.
 
+![Finnie chat interface — asking a financial concept question](/images/blog/finnie/chat-overview.png)
+
 ---
 
 ## Architecture overview
@@ -83,11 +85,15 @@ Upload a CSV of your holdings (ticker, shares, cost basis) and this agent runs a
 
 The agent doesn't give buy/sell advice (Finnie is explicitly an educational tool), but it surfaces the data and explains what it means. If 40% of your portfolio is in semiconductors, it will tell you that, explain what concentration risk implies, and let you draw your own conclusions.
 
+![Portfolio analysis output showing sector allocation and diversification score](/images/blog/finnie/portfolio-analysis.png)
+
 ### 3. Market Analysis agent
 
 Real-time stock and index data with natural language queries. "How is NVIDIA doing?" returns the current price, day's change, 52-week range, and a brief plain-English context. Index queries pull the major US benchmarks.
 
 The agent is backed by both yFinance (primary, free) and Alpha Vantage (fallback + news fundamentals). A caching layer in `src/utils/` prevents redundant API calls within a session — important when a user asks about the same ticker multiple times.
+
+![Market analysis response — live stock quote with day change and 52-week range](/images/blog/finnie/market-analysis.png)
 
 ### 4. Goal Planning agent
 
@@ -100,6 +106,8 @@ This is the most computationally interesting agent. It takes three inputs — cu
 For each scenario it calculates how long it takes to reach the goal, the total contributions made, and the total interest earned. The framing is explicitly educational: it shows the *range* of outcomes rather than a single "you'll be fine" number, which is far more honest about uncertainty.
 
 The results are visualised in Streamlit with Plotly charts — a side-by-side comparison of the three growth curves makes the impact of return assumptions immediately visible.
+
+![Goal planning projection — conservative, moderate, and aggressive growth curves](/images/blog/finnie/goal-planning-chart.png)
 
 ### 5. News Synthesizer agent
 
