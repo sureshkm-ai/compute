@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" font-family="system-ui,-apple-system,sans-serif">
+  <!-- Background -->
+  <rect width="900" height="560" fill="#f8fafc" rx="16"/>
+
+  <!-- Title -->
+  <text x="450" y="38" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">Finnie — Multi-Agent Architecture</text>
+
+  <!-- User box -->
+  <rect x="370" y="60" width="160" height="48" rx="10" fill="#1e293b"/>
+  <text x="450" y="79" text-anchor="middle" font-size="12" font-weight="600" fill="#f8fafc">User Query</text>
+  <text x="450" y="97" text-anchor="middle" font-size="10" fill="#94a3b8">Streamlit Chat Interface</text>
+
+  <!-- Arrow user → router -->
+  <line x1="450" y1="108" x2="450" y2="140" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Router box -->
+  <rect x="330" y="140" width="240" height="52" rx="10" fill="#0ea5e9" opacity="0.15" stroke="#0ea5e9" stroke-width="1.5"/>
+  <text x="450" y="162" text-anchor="middle" font-size="12" font-weight="700" fill="#0369a1">LangGraph Router</text>
+  <text x="450" y="180" text-anchor="middle" font-size="10" fill="#0369a1">StateGraph · Intent Classification</text>
+
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#64748b"/>
+    </marker>
+    <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#0ea5e9"/>
+    </marker>
+  </defs>
+
+  <!-- 6 agent boxes — two rows of 3 -->
+  <!-- Row 1 -->
+  <!-- Finance Q&A -->
+  <rect x="40" y="250" width="150" height="70" rx="10" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="40" y="250" width="150" height="8" rx="5" fill="#6366f1"/>
+  <text x="115" y="278" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b">Finance Q&amp;A</text>
+  <text x="115" y="295" text-anchor="middle" font-size="9.5" fill="#64748b">Concepts · Education</text>
+  <text x="115" y="311" text-anchor="middle" font-size="9.5" fill="#64748b">RAG grounded</text>
+
+  <!-- Portfolio Analysis -->
+  <rect x="220" y="250" width="150" height="70" rx="10" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="220" y="250" width="150" height="8" rx="5" fill="#8b5cf6"/>
+  <text x="295" y="278" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b">Portfolio Analysis</text>
+  <text x="295" y="295" text-anchor="middle" font-size="9.5" fill="#64748b">Holdings · Metrics</text>
+  <text x="295" y="311" text-anchor="middle" font-size="9.5" fill="#64748b">Diversification score</text>
+
+  <!-- Market Analysis -->
+  <rect x="400" y="250" width="150" height="70" rx="10" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="400" y="250" width="150" height="8" rx="5" fill="#0ea5e9"/>
+  <text x="475" y="278" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b">Market Analysis</text>
+  <text x="475" y="295" text-anchor="middle" font-size="9.5" fill="#64748b">Stocks · Indices</text>
+  <text x="475" y="311" text-anchor="middle" font-size="9.5" fill="#64748b">Live prices</text>
+
+  <!-- Goal Planning -->
+  <rect x="580" y="250" width="150" height="70" rx="10" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="580" y="250" width="150" height="8" rx="5" fill="#10b981"/>
+  <text x="655" y="278" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b">Goal Planning</text>
+  <text x="655" y="295" text-anchor="middle" font-size="9.5" fill="#64748b">Retirement · Savings</text>
+  <text x="655" y="311" text-anchor="middle" font-size="9.5" fill="#64748b">3-scenario projections</text>
+
+  <!-- News Synthesizer -->
+  <rect x="130" y="360" width="150" height="70" rx="10" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="130" y="360" width="150" height="8" rx="5" fill="#f59e0b"/>
+  <text x="205" y="388" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b">News Synthesizer</text>
+  <text x="205" y="405" text-anchor="middle" font-size="9.5" fill="#64748b">Financial headlines</text>
+  <text x="205" y="421" text-anchor="middle" font-size="9.5" fill="#64748b">Aggregation · Summary</text>
+
+  <!-- Tax Education -->
+  <rect x="310" y="360" width="150" height="70" rx="10" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="310" y="360" width="150" height="8" rx="5" fill="#ef4444"/>
+  <text x="385" y="388" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b">Tax Education</text>
+  <text x="385" y="405" text-anchor="middle" font-size="9.5" fill="#64748b">Account types</text>
+  <text x="385" y="421" text-anchor="middle" font-size="9.5" fill="#64748b">2024 tax rules · IRS</text>
+
+  <!-- Routing lines from router to agents -->
+  <!-- to Finance Q&A -->
+  <path d="M390,192 Q115,220 115,250" stroke="#0ea5e9" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <!-- to Portfolio -->
+  <path d="M410,192 Q295,225 295,250" stroke="#0ea5e9" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <!-- to Market -->
+  <line x1="455" y1="192" x2="470" y2="250" stroke="#0ea5e9" stroke-width="1.2" opacity="0.5"/>
+  <!-- to Goal Planning -->
+  <path d="M490,192 Q655,225 655,250" stroke="#0ea5e9" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <!-- to News -->
+  <path d="M400,192 Q200,300 205,360" stroke="#0ea5e9" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <!-- to Tax -->
+  <path d="M450,192 Q380,290 385,360" stroke="#0ea5e9" stroke-width="1.2" fill="none" opacity="0.5"/>
+
+  <!-- Data sources row -->
+  <!-- FAISS / RAG -->
+  <rect x="50" y="475" width="120" height="44" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="110" y="494" text-anchor="middle" font-size="10" font-weight="600" fill="#475569">FAISS Index</text>
+  <text x="110" y="509" text-anchor="middle" font-size="9" fill="#94a3b8">50+ articles · Glossary</text>
+
+  <!-- yFinance -->
+  <rect x="195" y="475" width="120" height="44" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="255" y="494" text-anchor="middle" font-size="10" font-weight="600" fill="#475569">yFinance</text>
+  <text x="255" y="509" text-anchor="middle" font-size="9" fill="#94a3b8">Live market data</text>
+
+  <!-- Alpha Vantage -->
+  <rect x="340" y="475" width="130" height="44" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="405" y="494" text-anchor="middle" font-size="10" font-weight="600" fill="#475569">Alpha Vantage</text>
+  <text x="405" y="509" text-anchor="middle" font-size="9" fill="#94a3b8">News · Fundamentals</text>
+
+  <!-- Gemini -->
+  <rect x="495" y="475" width="130" height="44" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="560" y="494" text-anchor="middle" font-size="10" font-weight="600" fill="#475569">Gemini 2.0 Flash</text>
+  <text x="560" y="509" text-anchor="middle" font-size="9" fill="#94a3b8">LLM backbone</text>
+
+  <!-- MCP -->
+  <rect x="650" y="475" width="120" height="44" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="710" y="494" text-anchor="middle" font-size="10" font-weight="600" fill="#475569">MCP Server</text>
+  <text x="710" y="509" text-anchor="middle" font-size="9" fill="#94a3b8">Claude Desktop · 7 tools</text>
+
+  <!-- Connector lines from agents to data -->
+  <line x1="115" y1="320" x2="110" y2="475" stroke="#e2e8f0" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <line x1="295" y1="320" x2="255" y2="475" stroke="#e2e8f0" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <line x1="475" y1="320" x2="405" y2="475" stroke="#e2e8f0" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <line x1="655" y1="320" x2="560" y2="475" stroke="#e2e8f0" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <line x1="205" y1="430" x2="405" y2="475" stroke="#e2e8f0" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <line x1="655" y1="320" x2="710" y2="475" stroke="#e2e8f0" stroke-width="1.2" stroke-dasharray="4,3"/>
+
+  <!-- Legend -->
+  <text x="760" y="272" font-size="9" fill="#94a3b8">Agents</text>
+  <rect x="720" y="280" width="10" height="10" rx="2" fill="#6366f1"/>
+  <text x="736" y="290" font-size="9" fill="#64748b">Finance Q&amp;A</text>
+  <rect x="720" y="297" width="10" height="10" rx="2" fill="#8b5cf6"/>
+  <text x="736" y="307" font-size="9" fill="#64748b">Portfolio</text>
+  <rect x="720" y="314" width="10" height="10" rx="2" fill="#0ea5e9"/>
+  <text x="736" y="324" font-size="9" fill="#64748b">Market</text>
+  <rect x="720" y="331" width="10" height="10" rx="2" fill="#10b981"/>
+  <text x="736" y="341" font-size="9" fill="#64748b">Goal Planning</text>
+  <rect x="720" y="348" width="10" height="10" rx="2" fill="#f59e0b"/>
+  <text x="736" y="358" font-size="9" fill="#64748b">News</text>
+  <rect x="720" y="365" width="10" height="10" rx="2" fill="#ef4444"/>
+  <text x="736" y="375" font-size="9" fill="#64748b">Tax</text>
+</svg>

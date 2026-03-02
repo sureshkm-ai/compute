@@ -1,0 +1,209 @@
+---
+title: "Building Finnie: A Production Multi-Agent AI Finance Assistant"
+description: "How I built a six-agent LangGraph system with RAG, live market data, and Claude Desktop integration to make personal finance education genuinely useful."
+date: "2026-03-01"
+tags: ["langgraph", "multi-agent", "rag", "streamlit", "gemini", "mcp"]
+draft: false
+---
+
+Most personal finance apps are dashboards. They show you numbers you already know and stop there. They don't explain *why* your portfolio is over-concentrated in tech, or what a Roth conversion ladder actually is, or whether your retirement target makes sense given your timeline. The knowledge gap between "I have a brokerage account" and "I understand what I'm doing" is enormous — and no spreadsheet closes it.
+
+That gap is what I wanted to close with **Finnie**, a conversational AI finance assistant built on a six-agent [LangGraph](https://www.langchain.com/langgraph) system. The core idea: instead of a single general-purpose model trying to answer everything, route each query to a specialist agent that has exactly the tools and context it needs.
+
+This post covers the full architecture, the design decisions behind each agent, the RAG pipeline, real-time market data integration, and what I learned building it.
+
+---
+
+## What Finnie can do
+
+Before diving into how it's built, here's the surface area:
+
+- Ask any financial concept question — "What is dollar-cost averaging?" — and get a grounded, sourced answer from a curated knowledge base
+- Upload a portfolio CSV and get holdings analysis with a diversification score, sector allocation, and live price enrichment
+- Query live stock and index data — "How is the S&P 500 doing today?" — with real-time prices via yFinance and Alpha Vantage
+- Run goal-planning projections across conservative, moderate, and aggressive scenarios for retirement or savings targets
+- Get synthesised summaries of the latest financial news, filtered to what matters for your situation
+- Ask about tax-advantaged accounts, contribution limits, and 2024 IRS rules
+
+Everything runs in a clean Streamlit chat interface, and the same backend is exposed as an MCP server for Claude Desktop — so you can get the same intelligence directly inside Claude.
+
+---
+
+## Architecture overview
+
+![Finnie multi-agent architecture diagram](/images/blog/finnie/architecture.svg)
+
+The system is built on LangGraph's `StateGraph`, where each node is a specialist agent and the edges are routing decisions made by a shared router.
+
+A request comes in through the Streamlit chat UI, hits the LangGraph router, gets classified by intent, and is dispatched to the appropriate agent. The agent calls its tools (RAG retrieval, market APIs, computation), constructs a response, and the result flows back to the user. State is persisted across turns so the conversation has memory.
+
+The six agents are completely independent modules — they share a base class and the LLM client, but nothing else. This made them easy to develop, test, and swap out individually.
+
+---
+
+## The router: intent classification with LangGraph
+
+The router is the system's spine. It reads the user's message and decides which agent handles it. Rather than using a separate classifier call, the router is itself a LangGraph node with access to conversation history — so it can resolve ambiguous follow-up messages correctly.
+
+```python
+class AgentState(TypedDict):
+    messages: Annotated[list, add_messages]
+    next_agent: str
+    context: dict
+```
+
+The `StateGraph` is wired as:
+
+```
+user_input → router → [finance_qa | portfolio | market | goal_planning | news | tax] → response
+```
+
+Each agent node returns to the router after responding, so multi-turn conversations that shift topic (e.g. "tell me about index funds" → "how much should I put in them?") re-classify correctly rather than getting stuck in the previous agent's context.
+
+---
+
+## The six agents
+
+### 1. Finance Q&A agent
+
+The education workhorse. It handles any conceptual question about personal finance — how compound interest works, what a P/E ratio means, the difference between ETFs and mutual funds.
+
+What makes it genuinely useful rather than a wrapper around a raw LLM call is the RAG layer. Instead of the model relying on its parametric knowledge alone, every answer is grounded against a curated knowledge base of 50+ finance articles and a financial glossary, retrieved via FAISS semantic search.
+
+The retrieval is set up with a "retrieval-required" discipline: if the semantic search doesn't find a strong match, the agent says so rather than hallucinating an answer.
+
+### 2. Portfolio Analysis agent
+
+Upload a CSV of your holdings (ticker, shares, cost basis) and this agent runs a full breakdown:
+
+- Live price enrichment via yFinance for current market values
+- Sector allocation using industry classifications
+- Diversification scoring — a simple but useful single number that flags concentration risk
+- Unrealised gain/loss per holding and overall
+
+The agent doesn't give buy/sell advice (Finnie is explicitly an educational tool), but it surfaces the data and explains what it means. If 40% of your portfolio is in semiconductors, it will tell you that, explain what concentration risk implies, and let you draw your own conclusions.
+
+### 3. Market Analysis agent
+
+Real-time stock and index data with natural language queries. "How is NVIDIA doing?" returns the current price, day's change, 52-week range, and a brief plain-English context. Index queries pull the major US benchmarks.
+
+The agent is backed by both yFinance (primary, free) and Alpha Vantage (fallback + news fundamentals). A caching layer in `src/utils/` prevents redundant API calls within a session — important when a user asks about the same ticker multiple times.
+
+### 4. Goal Planning agent
+
+This is the most computationally interesting agent. It takes three inputs — current savings, monthly contribution, and a target — and runs projections across three scenarios:
+
+- **Conservative**: 4% annual return (bonds-heavy, capital preservation)
+- **Moderate**: 7% annual return (balanced allocation)
+- **Aggressive**: 10% annual return (equity-heavy, long horizon)
+
+For each scenario it calculates how long it takes to reach the goal, the total contributions made, and the total interest earned. The framing is explicitly educational: it shows the *range* of outcomes rather than a single "you'll be fine" number, which is far more honest about uncertainty.
+
+The results are visualised in Streamlit with Plotly charts — a side-by-side comparison of the three growth curves makes the impact of return assumptions immediately visible.
+
+### 5. News Synthesizer agent
+
+Aggregates recent financial headlines via Alpha Vantage's news endpoint, clusters them by theme, and produces a synthesised summary. Rather than dumping a list of headlines, the agent groups stories (e.g. "Fed policy", "tech sector", "energy") and writes a brief paragraph on each cluster.
+
+This keeps responses digestible. A raw feed of 20 headlines is noise; a three-paragraph thematic synthesis is signal.
+
+### 6. Tax Education agent
+
+Handles questions about tax-advantaged account types (401k, IRA, Roth IRA, HSA, 529), 2024 contribution limits, required minimum distributions, and general IRS rules. The knowledge is encoded as structured data in `src/data/` — contribution limits change year to year and are better maintained as data than retrieved via RAG.
+
+Like all Finnie agents, it is explicitly an *educational* tool. It explains the rules; it does not give tax advice.
+
+---
+
+## The RAG pipeline
+
+The knowledge base is built offline and stored as a FAISS index at `src/data/`. The pipeline:
+
+1. **Ingest** — 50+ curated finance articles and a financial glossary (YAML) are chunked into ~500-token passages
+2. **Embed** — each chunk is embedded using Google's text embedding model
+3. **Index** — FAISS stores the vectors for fast cosine similarity search at runtime
+4. **Retrieve** — at query time, the Finance Q&A agent embeds the user's question and pulls the top-k passages
+
+```python
+def retrieve(query: str, k: int = 4) -> list[str]:
+    embedding = embed(query)
+    distances, indices = index.search(embedding, k)
+    return [passages[i] for i in indices[0] if distances[0][i] < THRESHOLD]
+```
+
+The distance threshold matters a lot. Setting it too loose causes the agent to inject irrelevant passages into its context; too tight and it refuses to answer things it actually knows. I landed on a threshold that preferentially returns fewer, higher-quality chunks rather than padding context with weak matches.
+
+The glossary gets special handling — exact-match lookups take priority over semantic search for defined terms, which prevents the embedding model from confusing similar-but-different financial terms.
+
+---
+
+## Real-time market data
+
+Market data flows through a utility client in `src/utils/` with two backends:
+
+**yFinance** is the primary source. It's free, has excellent coverage for US equities and indices, and the Python wrapper is reliable. It handles stock quotes, historical OHLCV data, and basic fundamentals.
+
+**Alpha Vantage** fills the gaps: financial news, earnings data, and as a fallback when yFinance rate-limits. The free tier is sufficient for a conversational assistant where queries arrive one at a time.
+
+The caching layer uses a simple TTL dict keyed on (ticker, data_type). A 60-second TTL for quotes is short enough to feel live but prevents hammering the API when a user asks about the same ticker in rapid succession.
+
+```python
+@cached(ttl_seconds=60)
+def get_quote(ticker: str) -> dict:
+    return yf.Ticker(ticker).fast_info
+```
+
+---
+
+## Claude Desktop integration via MCP
+
+One of the more interesting additions is the MCP (Model Context Protocol) server in the repo. It exposes seven of Finnie's capabilities as MCP tools, meaning you can invoke them directly from Claude Desktop without leaving your workflow.
+
+The seven tools are:
+
+1. `get_stock_quote` — live price for any ticker
+2. `get_market_summary` — major index snapshot
+3. `analyze_portfolio` — accepts a list of holdings dicts, returns analysis
+4. `get_financial_news` — thematic news summary
+5. `calculate_goal` — projection across three scenarios
+6. `explain_concept` — RAG-backed finance education
+7. `get_tax_info` — account type and contribution limit lookup
+
+From Claude Desktop you can say "what's Tesla's current price?" or "explain tax-loss harvesting" and get Finnie's actual answers, not just the LLM's parametric recall. The MCP layer makes the distinction between "Claude knows about finance" and "Finnie has looked it up right now" explicit.
+
+---
+
+## Tech stack
+
+| Layer | Choice | Why |
+|---|---|---|
+| LLM | Gemini 2.0 Flash | Fast, cheap, strong instruction-following |
+| Agent orchestration | LangGraph StateGraph | First-class multi-agent routing, conversation state |
+| Vector store | FAISS | No infra to run, fast local search |
+| Market data | yFinance + Alpha Vantage | Complementary coverage, free tier viable |
+| Visualisation | Plotly + Streamlit | Zero-config charting in a chat-native UI |
+| Desktop integration | MCP server | Reuse the same backend from Claude Desktop |
+
+The choice of Gemini 2.0 Flash over GPT-4o or Claude Sonnet was primarily cost and latency. A conversational finance assistant has many short inference calls — the router classification, each agent call, sometimes a follow-up call for formatting. Flash's speed makes the app feel snappy; its cost means the Streamlit cloud deployment doesn't hit quota limits with moderate usage.
+
+LangGraph over raw LangChain or a custom orchestrator was the right call. The `StateGraph` model maps naturally to "agent that runs, returns, then routing decides next step." The alternative — a ReAct loop in a single agent — gets messy quickly when you have six tools with very different context requirements.
+
+---
+
+## What I'd do differently
+
+**Streaming responses.** Right now the full agent response lands at once. For a chat interface, token-by-token streaming would feel much more responsive, especially for the longer portfolio analysis outputs. LangGraph supports streaming; it's on the roadmap.
+
+**Portfolio CSV validation.** The current parser is permissive — it tries to coerce whatever the user uploads. A stricter validation step with helpful error messages ("your CSV is missing a 'ticker' column") would reduce friction for new users.
+
+**Evaluation harness.** The Finance Q&A agent's RAG quality is hard to measure informally. Adding a golden-set eval — a fixed set of questions with expected answers — would let me tune the retrieval threshold and chunk size with confidence rather than vibes.
+
+**Persistent memory across sessions.** Currently state resets on page reload. A lightweight persistence layer (SQLite or Redis) would let Finnie remember a user's portfolio and goals across sessions, making it a genuine ongoing tool rather than a fresh start each time.
+
+---
+
+## Try it
+
+The app is live at [finance-agent-ai.streamlit.app](https://finance-agent-ai.streamlit.app/). No sign-up required — just start typing.
+
+The full source, including the MCP server, is on GitHub at [sureshkm-ai/ai-finance-assitant](https://github.com/sureshkm-ai/ai-finance-assitant). Contributions welcome — especially on the eval harness and streaming front.

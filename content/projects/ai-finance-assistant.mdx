@@ -1,37 +1,41 @@
 ---
-title: "AI Finance Assistant"
-description: "A conversational AI agent for personal finance analysis — tracks spending, answers natural-language queries over your data, and surfaces actionable insights."
+title: "Finnie — AI Finance Assistant"
+description: "A production multi-agent AI system with six specialist agents for financial education, portfolio analysis, live market data, goal planning, news synthesis, and tax guidance."
 date: "2026-03-01"
 draft: false
 featured: true
 status: "Live"
-stack: ["Python", "Streamlit", "LangChain", "OpenAI", "Pandas"]
+stack: ["Python", "LangGraph", "Gemini 2.0 Flash", "FAISS", "Streamlit", "MCP"]
 impact:
-  - "Natural-language queries over financial data"
-  - "Automated spending insights & summaries"
-  - "Deployed live on Streamlit Cloud"
+  - "Six specialised agents via LangGraph StateGraph routing"
+  - "RAG over 50+ curated finance articles with FAISS"
+  - "MCP server exposing 7 tools for Claude Desktop"
 links:
   - label: "GitHub"
     url: "https://github.com/sureshkm-ai/ai-finance-assitant"
   - label: "Live Demo"
     url: "https://finance-agent-ai.streamlit.app/"
+  - label: "Blog post"
+    url: "/blog/2026-03-01-building-finnie-ai-finance-assistant"
 ---
 
 ## Overview
 
-AI Finance Assistant is a conversational agent that lets you ask plain-English questions about your personal finances and get structured, grounded answers — no spreadsheets required.
+Finnie is a conversational AI finance assistant built on a six-agent LangGraph system. Instead of a single general-purpose model trying to answer everything, a router dispatches each query to the specialist agent with the right tools and context.
 
-## What it does
+## The six agents
 
-- **Natural-language queries** — ask "How much did I spend on food last month?" and get a direct answer
-- **Spending summaries** — automatic categorisation and period-over-period comparisons
-- **Insight surfacing** — the agent flags unusual transactions and highlights saving opportunities
-- **Streamlit UI** — clean, browser-based interface deployable in one click
+- **Finance Q&A** — educational concepts grounded via RAG over a 50+ article knowledge base
+- **Portfolio Analysis** — holdings breakdown, diversification scoring, live price enrichment
+- **Market Analysis** — real-time stock and index data via yFinance + Alpha Vantage
+- **Goal Planning** — retirement/savings projections across conservative, moderate, and aggressive scenarios
+- **News Synthesizer** — thematic aggregation and summary of financial headlines
+- **Tax Education** — account types, 2024 contribution limits, IRS rules
 
-## How it works
+## Architecture
 
-The agent combines an LLM with Pandas-backed tool calls to query your financial data. A LangChain tool layer translates user intent into structured data operations, so the model never hallucinates figures — it always derives answers from the actual numbers.
+Built on LangGraph's `StateGraph` with shared conversation state and intent-based routing. The Gemini 2.0 Flash backbone keeps inference fast and cost-efficient across many short agent calls per conversation.
 
-## Try it
+## Claude Desktop integration
 
-The app is live at [finance-agent-ai.streamlit.app](https://finance-agent-ai.streamlit.app/) — upload a CSV export from your bank and start asking questions.
+The system doubles as an MCP server exposing seven tools — stock quotes, portfolio analysis, goal calculations, concept explanations, and more — directly inside Claude Desktop.
