@@ -11,7 +11,7 @@ export default function SiteHeader() {
             alt="Suresh"
             width={28}
             height={28}
-            className="rounded-full object-cover"
+            className="h-7 w-7 rounded-full object-cover"
           />
           Compute
         </Link>
