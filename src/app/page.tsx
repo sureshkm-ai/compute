@@ -15,10 +15,10 @@ export default function HomePage() {
           </p>
 
           <div className="flex flex-wrap gap-3 pt-2">
-            <Link className="rounded-2xl bg-slate-900 px-4 py-2 text-sm text-white hover:opacity-90 dark:bg-white dark:text-slate-900" href="/projects">
+            <Link className="rounded-2xl border border-slate-200 px-4 py-2 text-sm hover:opacity-80 dark:border-slate-700" href="/projects">
               View Projects
             </Link>
-            <Link className="rounded-2xl border border-slate-200 px-4 py-2 text-sm hover:opacity-80 dark:border-slate-800" href="/blog">
+            <Link className="rounded-2xl border border-slate-200 px-4 py-2 text-sm hover:opacity-80 dark:border-slate-700" href="/blog">
               Read Blog
             </Link>
           </div>
